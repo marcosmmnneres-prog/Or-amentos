@@ -13,6 +13,10 @@ create table if not exists public.records (
 
 alter table public.records enable row level security;
 
+-- Acesso pela API: só usuários logados (visitantes anônimos não acessam nada).
+revoke all on public.records from anon;
+grant select, insert, update, delete on public.records to authenticated;
+
 drop policy if exists "records_select_own" on public.records;
 drop policy if exists "records_insert_own" on public.records;
 drop policy if exists "records_update_own" on public.records;
