@@ -5,6 +5,7 @@ Sistema web de orçamentos e comparativos de preços. Interface, textos e mensag
 ## Regras de trabalho
 - **Nunca publique, envie ou crie nada externo** (git push, repositórios, deploy, contas) sem o usuário indicar o destino e concordar. Pergunte antes.
 - Repositório oficial: https://github.com/marcosmmnneres-prog/Or-amentos (branch `main`). Autor dos commits: `marcosmmnneres-prog`.
+- Produção: **https://orcamentos-liard-nine.vercel.app** (Vercel, equipe "Casa Amora", projeto `orcamentos`, deploy automático a cada push na `main`). Supabase: projeto `izkyrzzwthaehguguxpz` (região us-west-2). Atenção: `orcamentos.vercel.app` é de outra pessoa.
 - Ordem de publicação combinada: GitHub → Supabase → Vercel → voltar ao Supabase para configurar a Site URL.
 - Depois de mudanças, rode `npm run build` para validar. A porta 3000 da máquina do usuário é usada por outro programa, então use outra (ex.: `npx next start -p 3456`).
 
