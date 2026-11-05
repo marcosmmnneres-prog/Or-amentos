@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   ChartColumn,
+  CloudOff,
   FileText,
   LayoutDashboard,
   LayoutTemplate,
@@ -60,6 +61,20 @@ function SyncPill() {
         <span className="ellipsis" style={{ display: "block" }}>{sub}</span>
       </span>
     </Link>
+  );
+}
+
+function LoginBanner({ hidden }: { hidden: boolean }) {
+  const { session, ready } = useSync();
+  if (!cloudEnabled || !ready || session || hidden) return null;
+  return (
+    <div className="login-banner no-print">
+      <CloudOff size={18} />
+      <span>
+        <b>Você não entrou na sua conta.</b> O que fizer agora fica salvo só neste aparelho.
+      </span>
+      <Link href="/configuracoes" className="btn btn-sm btn-primary">Entrar</Link>
+    </div>
   );
 }
 
@@ -120,6 +135,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <main className="main">
+        <LoginBanner hidden={path.startsWith("/configuracoes")} />
         <div className="view" key={path}>
           {children}
         </div>

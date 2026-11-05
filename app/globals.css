@@ -455,3 +455,11 @@ table.data { width: 100%; border-collapse: collapse; font-size: 14px; }
 @media print {
   .tab-hidden-m { display: block !important; }
 }
+
+/* Aviso de conta desconectada */
+.login-banner {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; padding: 12px 16px;
+  border-radius: 12px; background: rgba(255, 176, 0, 0.1); border: 1px solid rgba(255, 176, 0, 0.35); color: var(--cream); font-size: 14px;
+}
+.login-banner svg { color: var(--amber); flex-shrink: 0; }
+.login-banner span { flex: 1; min-width: 200px; line-height: 1.45; }

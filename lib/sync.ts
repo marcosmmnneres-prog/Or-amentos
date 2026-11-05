@@ -17,8 +17,9 @@ export const supabase = () => {
 };
 
 type SyncStatus = "off" | "idle" | "syncing" | "error";
-export const useSync = create<{ session: Session | null; status: SyncStatus; lastSync: number | null; error?: string }>(() => ({
+export const useSync = create<{ session: Session | null; ready: boolean; status: SyncStatus; lastSync: number | null; error?: string }>(() => ({
   session: null,
+  ready: !cloudEnabled,
   status: cloudEnabled ? "idle" : "off",
   lastSync: null,
 }));
@@ -113,15 +114,27 @@ export function startSync() {
   if (!sb || started) return;
   started = true;
 
+  const fail = (e: Error) => useSync.setState({ status: "error", error: e.message });
+
   sb.auth.getSession().then(({ data }) => {
-    useSync.setState({ session: data.session });
-    if (data.session) pullAndMerge(data.session.user.id).catch((e) => useSync.setState({ status: "error", error: e.message }));
+    useSync.setState({ session: data.session, ready: true });
+    if (data.session) pull(data.session.user.id, true).catch(fail);
   });
   sb.auth.onAuthStateChange((event, session) => {
-    useSync.setState({ session });
-    if (event === "SIGNED_IN" && session)
-      pullAndMerge(session.user.id).catch((e) => useSync.setState({ status: "error", error: e.message }));
+    useSync.setState({ session, ready: true });
+    // adiado: o Supabase não recomenda chamar a API de dentro deste callback
+    if (event === "SIGNED_IN" && session) setTimeout(() => pull(session.user.id, true).catch(fail), 0);
   });
+
+  // Busca novidades de outros aparelhos: ao voltar para a aba e a cada minuto.
+  const refresh = () => {
+    const s = useSync.getState().session;
+    if (s && document.visibilityState === "visible") pull(s.user.id).catch(fail);
+  };
+  document.addEventListener("visibilitychange", refresh);
+  window.addEventListener("focus", refresh);
+  window.addEventListener("online", refresh);
+  setInterval(refresh, 60000);
 
   useApp.subscribe((s, prev) => {
     const session = useSync.getState().session;
@@ -141,9 +154,20 @@ export function startSync() {
   });
 }
 
+let pulling: Promise<void> | null = null;
+let lastPull = 0;
+/** Evita buscas simultâneas e repetidas em menos de 10 s (exceto quando forçado). */
+function pull(userId: string, force = false): Promise<void> {
+  if (pulling) return pulling;
+  if (!force && Date.now() - lastPull < 10000) return Promise.resolve();
+  lastPull = Date.now();
+  pulling = pullAndMerge(userId).finally(() => (pulling = null));
+  return pulling;
+}
+
 export async function syncNow() {
   const s = useSync.getState().session;
-  if (s) await pullAndMerge(s.user.id);
+  if (s) await pull(s.user.id, true);
 }
 
 export type { CollectionKey };
